@@ -1,0 +1,11 @@
+test case 0:
+Open 3 terminals in different machines. 1 for dbserver and 2 for dbclients.
+1. tc0_c1_pg contains put and get operations. 
+Run client 1  with this testcases as input (use redirection <). 
+{prompt} ./dbclient<tc0_c1_pg
+All put and get should be successful
+2. tc0_c2_dg contains delete and get operation. Input to client 2. 
+All delete operations should be successful. All get operations should fail.
+3. Repeat step 1
+
+The size of the database file should be 10240 bytes

@@ -1,0 +1,94 @@
+CS 3377 System Prog. in Unix and other Envs.
+Project 3
+Due: Thursday, May 5:  11:59 PM (on elearning).
+Late submission will be accepted till Sunday, May 8th, 11:59 PM.
+
+
+You can do this project individually or with a partner. Never share your code with anyone other than your partner.
+
+In this project, you will implement database server (dbserver) and database client (dbclient) applications using TCP/IP. The programs will be written in C. The specifications for server and clients are given below.
+
+Database Server (dbserver):
+In our class, we looked at the program for sequential server. In this project you will implement a concurrent server using threads. In a concurrent server, the parent thread initializes the socket to listening socket, and waits for connection request from a client. Once the server accepts a connection request, it creates a new thread (handler) to handle the client's requests. The server then waits for the next request. The server never terminates. A handler thread terminates only when its client closes the connection. 
+
+The format of the messages exchanged between the server and a client and the record stored in the database is defined in ~sxa173731/3377/hw/msg.h. Include this file in your programs.
+
+Handler Thread:
+A handler thread process each request from a dbclient and send an appropriate response back to the client. There are three types of request messages from dbclient: 
+1. PUT: This message contains the data that needs to be stored in the database. On receiving this message, handler writes the data on the database. (Do not store the entire message. Store only the client data.) If the write is successful, it will send SUCCESS message to the client. Otherwise the handler sends FAIL message.
+2. GET: This request message will contain the id of the record that needs to be fetched. On receiving this message, handler searches the database to find a matching record (record with id field that matches the id in the get message). If a matching record is found, the handler sends SUCCESS message. The message should also contain the record. Otherwise the handler sends FAIL message.
+3. DELETE: This request message will contain the id of the record that needs to be deleted. On receiving this message, handler searches the database to find a matching record (record with id field that matches the id in the delete message). If a matching record is found, the handler marks the record as unused, and then sends SUCCESS message along with the deleted record. Otherwise the handler sends FAIL message.
+
+Where to store a record in the database file?
+To put a record, the handler should look for the first unused record in the database. Note a record may become unused if a delete operation was performed on it. If no unused record is found, a new record is created at the end of the file (append). To find an unused record, simply search the entire database file sequentially. (A curious mind should try to devise a way to track the unused records more efficiently.)
+
+Locking a record:
+Since multiple threads are running concurrently, two threads, may try to use the same record concurrently during put operation. This can lead to inconsistencies. To avoid this problem use lockf(). Do not lock the entire file. Lock only the record that requires to be updated. Two threads may try to lock a record at the same time. Only one of them will succeed. The other thread should not be blocked. Choose the appropriate option so that the lockf() returns error. In this case, the record is no longer available. Find the next available record.
+
+There is no need to lock during get or delete operation.
+
+
+Database Client (dbclient):
+The client application is interactive (you may want to reuse some of the code you wrote for A5). First, it sets up a connection with the server. It then prompts the user to choose one of the operations: put, get, delete, quit. Below are the actions taken by dbclient for these operations.
+
+PUT: If the user chooses put, then prompt the user for name and id. Send a put message to dbserver (fill name and id fields of record), and wait for the response. If the response is SUCCESS, print "put success" message. Otherwise print "put failed" message.
+
+GET: If the user chooses get, then prompt the user for id. Send a get message to server (only fill id field of the record), and wait for the response. If the response is SUCCESS, print name and id. Otherwise print "get failed" message.
+
+DELETE: If the user chooses delete, then prompt the user for id. Send a delete message to server (only fill id field of the record), and wait for the response. If the response is SUCCESS, print name and id. Otherwise print "delete failed" message.
+
+QUIT: Close the socket, cleanup, and terminate the program.
+
+Sample output for dbclient:
+Enter your choice (1 to put, 2 to get, 3 to delete, 0 to quit): 1
+Enter the name: Abdul Wallace
+Enter the id: 47678
+Put success.
+Enter your choice (1 to put, 2 to get,3 to delete, 0 to quit): 1
+Enter the name: Lakshmi Wong
+Enter the id: 34980
+Put success.
+Enter your choice (1 to put, 2 to get, 3 to delete, 0 to quit): 2
+Enter the id: 34980
+name: Lakshmi Wong
+id: 34980
+Enter your choice (1 to put, 2 to get, 3 to delete, 0 to quit): 3
+Enter the id: 99999
+Delete failed
+Enter your choice (1 to put, 2 to get, 0 to quit): 0
+	
+
+Name your server program dbserver.c
+Compile it as follows:
+	gcc dbserver.c -o dbserver -Wall -Werror -std=gnu99 -pthread
+
+Sample usage:
+	./dbserver 3648
+
+3648 is the port number on which the server will be listening. Pick a number randomly. If the number is already used, your server will fail. If so, pick another port number.
+
+Client:
+
+Name your client program dbclient.c
+Compile it as follows:
+	gcc dbclient.c -o dbclient -Wall -Werror -std=gnu99 -pthread
+	
+The client program expects two command line arguments: server DNS name and port number. 
+
+Sample usage:
+	./dbclient cs2.utdallas.edu 3648
+
+Write a Makefile for compilation. It will ease your burden.
+
+Your server should be able to handle many clients at the same time. The upper limit on the number of clients is system imposed. Your program should not put a limit on the number of clients that can connect with the server at any given time. Test your programs with multiple clients connected to the server concurrently.
+
+Feel free to reuse the code server.c, sendandreceive.c. The code required for connection setup are already there in these files. You have to understand them well to use them.
+
+Submit dbserver.c and dbclient.c on elearning. No need to submit msg.h file.
+
+
+
+
+
+
+

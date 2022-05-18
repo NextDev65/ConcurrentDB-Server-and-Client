@@ -1,0 +1,13 @@
+test case 1:
+Open 4 terminals in different servers. 1 for server and 3 for clients
+1. tc1_ct1 and tc1_ct2  contains only put operations. 
+Run two clients  parallely with these testcases as input (one for each, use redirection <). 
+(Use 'at' command to synchronize program executions.)
+{prompt} dbclient<tcl_ct1
+{prompt} dbclient<tcl_ct2
+All puts should be successful
+2. tc1_ct3 contains only get operation. Input to client 3. All get ops should be successful.
+3. tc1_ct1d and  tc1_ct2d only deletes.
+Run two clients 1 and 2 parallely with these testcases as input (one for each, use redirection <). 
+All deletes should be successful
+4. Repeat 2. All get should fail.
